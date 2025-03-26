@@ -1,17 +1,16 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
-export type ItemsDocument = AuthSso & Document;
-
-@Schema()
+@Entity()
 export class AuthSso {
-  @Prop({ required: true })
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ type: "float" })
   name: string;
 
-  @Prop({ required: true, unique: true })
+  @Column({ type: "float" })
   email: string;
 
-  @Prop({ required: true })
+  @Column({ type: "float" })
   password: string;
 }
-
-export const AuthSsoSchema = SchemaFactory.createForClass(AuthSso);

@@ -1,27 +1,40 @@
-import { HttpException, Injectable } from '@nestjs/common';
-import { LoginDto, RegisterDto } from './dto/create-auth-sso.dto';
-import { hash, compare } from 'bcrypt';
-import { AuthSso, ItemsDocument } from './entities/auth-sso.entity';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable, HttpException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { LoginDto, RegisterDto } from "./dto/create-auth-sso.dto";
+import { hash, compare } from "bcrypt";
+import { AuthSso } from "./entities/auth-sso.entity";
+import { JwtService } from "@nestjs/jwt";
 
 @Injectable()
 export class AuthSsoService {
   constructor(
-    @InjectModel(AuthSso.name)
-    private userModel: Model<ItemsDocument, any>,
-    private jwtservice: JwtService,
+    @InjectRepository(AuthSso)
+    private readonly userRepository: Repository<AuthSso>,
+    private jwtService: JwtService
   ) {}
 
   async create(registerDto: RegisterDto) {
     try {
-      const { password } = registerDto;
-      const passwordToHash = await hash(password, 10);
-      registerDto = { ...registerDto, password: passwordToHash };
-      const createdUser = await this.userModel.create(registerDto);
+      const { email, password, name } = registerDto;
 
-      return createdUser;
+      // Verificar si el usuario ya existe
+      const existingUser = await this.userRepository.findOne({
+        where: { email }
+      });
+      if (existingUser) {
+        throw new HttpException("USER_ALREADY_EXISTS", 400);
+      }
+
+      // Hashear contraseña
+      const hashedPassword = await hash(password, 10);
+      const newUser = this.userRepository.create({
+        email,
+        name,
+        password: hashedPassword
+      });
+
+      return await this.userRepository.save(newUser);
     } catch (error) {
       throw error;
     }
@@ -29,34 +42,32 @@ export class AuthSsoService {
 
   async auth(loginDto: LoginDto) {
     try {
-      console.log('login', loginDto);
       const { email, password } = loginDto;
-      const findUser = await this.userModel.findOne({ email: email });
 
+      const findUser = await this.userRepository.findOne({ where: { email } });
       if (!findUser) {
-        throw new HttpException('USER_NOT_FOUND', 404);
+        throw new HttpException("USER_NOT_FOUND", 404);
       }
 
-      const checkpassword = await compare(password, findUser.password);
-
-      if (!checkpassword) {
-        throw new HttpException('PASSWORD_NOT_FOUND', 403);
+      const isPasswordValid = await compare(password, findUser.password);
+      if (!isPasswordValid) {
+        throw new HttpException("INVALID_PASSWORD", 403);
       }
+
       const payload = {
-        id: findUser._id,
+        id: findUser.id,
         name: findUser.name,
-        email: findUser.email,
+        email: findUser.email
       };
-      const token = this.jwtservice.sign(payload);
+      const token = this.jwtService.sign(payload);
 
-      const data = {
+      return {
         statusCode: 200,
         user: payload,
-        token,
+        token
       };
-      return data;
     } catch (error) {
-      console.error('Error occurred during authentication:', error);
+      console.error("Error during authentication:", error);
       throw error;
     }
   }
