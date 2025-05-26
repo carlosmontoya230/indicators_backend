@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity()
-export class AuthSso {
+export class AuthSsoEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
