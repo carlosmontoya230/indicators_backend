@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import * as bcrypt from "bcrypt";
@@ -20,6 +20,14 @@ export class UsersService {
 
   async createUser(email: string, contrasena: string, roles: number[]) {
     try {
+      // Verificar si el email ya existe
+      const existingUser = await this.usuarioRepository.findOne({
+        where: { email }
+      });
+      if (existingUser) {
+        throw new BadRequestException("El email ya está registrado.");
+      }
+
       const hashedPassword = await bcrypt.hash(contrasena, 10);
       const usuario = this.usuarioRepository.create({
         email,
@@ -36,6 +44,9 @@ export class UsersService {
       }
       return await this.findOne(email);
     } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       throw new Error(`Error creating user: ${error.message}`);
     }
   }
@@ -82,6 +93,15 @@ export class UsersService {
   }
 
   // -------------
+
+  async createRol(nombre: string) {
+    try {
+      const rol = this.rolRepository.create({ nombre });
+      return await this.rolRepository.save(rol);
+    } catch (error) {
+      throw new Error(`Error creating rol: ${error.message}`);
+    }
+  }
 
   async findAllRoles() {
     try {

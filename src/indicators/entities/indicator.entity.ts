@@ -14,6 +14,7 @@ import { ResponsablesPorIndicador } from "./actors/reponsiblePerIndicator.entity
 import { FuentesPorIndicador } from "./source/sourcePerIndicator.entity";
 import { VariablesPorIndicador } from "src/users-sso/entities/variablePerIndicator.entity";
 import { ResultadoIndicador } from "./resultsIndicator.entity";
+import { Frecuencia } from "./period.entity";
 
 @Entity()
 export class Indicador {
@@ -58,6 +59,9 @@ export class Indicador {
 
   @Column()
   fkidfrecuencia: number;
+  @ManyToOne(() => Frecuencia)
+  @JoinColumn({ name: "fkidfrecuencia" })
+  frecuencia: Frecuencia;
 
   @Column({ type: "varchar", length: 20, nullable: true })
   fkidarticulo: string;

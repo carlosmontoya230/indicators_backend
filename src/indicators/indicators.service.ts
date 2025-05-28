@@ -12,13 +12,19 @@ import { IndicadorRepresentVisualDto } from "./dto/indicadorRepresenVisual.dto";
 import { Indicador } from "./entities/indicator.entity";
 import { TipoIndicador } from "./entities/typeIndicator.entity";
 import {
+  CreateFrecuenciaDto,
+  CreateIndicadorDto,
   CreateResultadoIndicadorDto,
   CreateSentidoDto,
   CreateTypeIndicatorDto,
+  CreateUnitOfMeasurementDto,
+  UpdateIndicadorDto,
   UpdateTypeIndicatorDto
 } from "./dto/indicators.dto";
 import { ResultadoIndicador } from "./entities/resultsIndicator.entity";
 import { Sentido } from "./entities/meaning.entity";
+import { UnidadMedicion } from "./entities/unitOfMeasurement.entity";
+import { Frecuencia } from "./entities/period.entity";
 
 @Injectable()
 export class IndicatorsService {
@@ -30,11 +36,200 @@ export class IndicatorsService {
     @InjectRepository(ResultadoIndicador)
     private readonly resultadoRepository: Repository<ResultadoIndicador>,
     @InjectRepository(Sentido)
-    private readonly sentidoRepository: Repository<Sentido>
+    private readonly sentidoRepository: Repository<Sentido>,
+    @InjectRepository(UnidadMedicion)
+    private readonly unidadMedicionRepository: Repository<UnidadMedicion>,
+    @InjectRepository(Frecuencia)
+    private readonly frecuenciaRepository: Repository<Frecuencia>
   ) {}
 
   async findAll(): Promise<Indicador[]> {
     return this.indicadorRepository.find();
+  }
+
+  //* CRUD de indicadores
+
+  async createIndicador(dto: CreateIndicadorDto): Promise<Indicador> {
+    try {
+      // --- TipoIndicador ---
+      let tipoIndicador = await this.tipoIndicadorRepository.findOne({
+        where: { id: dto.fkidtipoindicador }
+      });
+      if (!tipoIndicador) {
+        if (dto.tipoIndicadorData.nombre) {
+          tipoIndicador = await this.createTypeIndicator(dto.tipoIndicadorData);
+        } else {
+          throw new NotFoundException(
+            "Tipo de indicador no encontrado y no se proporcionaron datos para crearlo"
+          );
+        }
+      }
+
+      // --- UnidadMedicion ---
+      let unidadMedicion = await this.unidadMedicionRepository.findOne({
+        where: { id: dto.fkidunidadmedicion }
+      });
+      if (!unidadMedicion) {
+        if (dto.unidadMedicionData.descripcion) {
+          unidadMedicion = await this.createMeasurementUnit(
+            dto.unidadMedicionData
+          );
+        } else {
+          throw new NotFoundException(
+            "Unidad de medición no encontrada y no se proporcionaron datos para crearla"
+          );
+        }
+      }
+
+      // --- Sentido ---
+      let sentido = await this.sentidoRepository.findOne({
+        where: { id: dto.fkidsentido }
+      });
+      if (!sentido) {
+        if (dto.sentidoData && dto.sentidoData.nombre) {
+          sentido = await this.createMeaning(dto.sentidoData);
+        } else {
+          throw new NotFoundException(
+            "Sentido no encontrado y no se proporcionaron datos para crearlo"
+          );
+        }
+      }
+
+      // --- Frecuencia ---
+      let frecuencia = await this.frecuenciaRepository.findOne({
+        where: { id: dto.fkidfrecuencia }
+      });
+      if (!frecuencia) {
+        if (dto.frecuenciaData.nombre) {
+          frecuencia = await this.createFrequency(dto.frecuenciaData);
+        } else {
+          throw new NotFoundException(
+            "Frecuencia no encontrada y no se proporcionaron datos para crearla"
+          );
+        }
+      }
+
+      // Crear el indicador
+      const indicador = this.indicadorRepository.create({
+        ...dto,
+        tipoIndicador,
+        unidadMedicion,
+        sentido,
+        frecuencia
+      });
+
+      return await this.indicadorRepository.save(indicador);
+    } catch (error) {
+      throw new BadRequestException(
+        `Error creando indicador: ${error.message}`
+      );
+    }
+  }
+
+  async findAllIndicadores(): Promise<Indicador[]> {
+    return this.indicadorRepository.find({
+      relations: [
+        "tipoIndicador",
+        "unidadMedicion",
+        "sentido",
+        "frecuencia",
+        "representVisualPorIndicador",
+        "responsablesPorIndicador",
+        "fuentesPorIndicador",
+        "variablesPorIndicador",
+        "resultadosIndicador"
+      ]
+    });
+  }
+
+  async findOneIndicador(id: number): Promise<Indicador> {
+    const indicador = await this.indicadorRepository.findOne({
+      where: { id },
+      relations: [
+        "tipoIndicador",
+        "unidadMedicion",
+        "sentido",
+        "frecuencia",
+        "representVisualPorIndicador",
+        "responsablesPorIndicador",
+        "fuentesPorIndicador",
+        "variablesPorIndicador",
+        "resultadosIndicador"
+      ]
+    });
+    if (!indicador) throw new NotFoundException("Indicador no encontrado");
+    return indicador;
+  }
+
+  async updateIndicador(
+    id: number,
+    dto: UpdateIndicadorDto
+  ): Promise<Indicador> {
+    try {
+      const indicador = await this.indicadorRepository.findOne({
+        where: { id }
+      });
+      if (!indicador) throw new NotFoundException("Indicador no encontrado");
+
+      // Validar y actualizar relaciones si se envían
+      if (dto.fkidtipoindicador) {
+        const tipoIndicador = await this.tipoIndicadorRepository.findOne({
+          where: { id: dto.fkidtipoindicador }
+        });
+        if (!tipoIndicador)
+          throw new NotFoundException("Tipo de indicador no encontrado");
+        indicador.tipoIndicador = tipoIndicador;
+        indicador.fkidtipoindicador = dto.fkidtipoindicador;
+      }
+      if (dto.fkidunidadmedicion) {
+        const unidadMedicion = await this.unidadMedicionRepository.findOne({
+          where: { id: dto.fkidunidadmedicion }
+        });
+        if (!unidadMedicion)
+          throw new NotFoundException("Unidad de medición no encontrada");
+        indicador.unidadMedicion = unidadMedicion;
+        indicador.fkidunidadmedicion = dto.fkidunidadmedicion;
+      }
+      if (dto.fkidsentido) {
+        const sentido = await this.sentidoRepository.findOne({
+          where: { id: dto.fkidsentido }
+        });
+        if (!sentido) throw new NotFoundException("Sentido no encontrado");
+        indicador.sentido = sentido;
+        indicador.fkidsentido = dto.fkidsentido;
+      }
+      if (dto.fkidfrecuencia) {
+        const frecuencia = await this.frecuenciaRepository.findOne({
+          where: { id: dto.fkidfrecuencia }
+        });
+        if (!frecuencia)
+          throw new NotFoundException("Frecuencia no encontrada");
+        indicador.frecuencia = frecuencia;
+        indicador.fkidfrecuencia = dto.fkidfrecuencia;
+      }
+
+      Object.assign(indicador, dto);
+      await this.indicadorRepository.save(indicador);
+      return this.findOneIndicador(id);
+    } catch (error) {
+      throw new BadRequestException(
+        `Error actualizando indicador: ${error.message}`
+      );
+    }
+  }
+
+  async removeIndicador(id: number): Promise<void> {
+    try {
+      const indicador = await this.indicadorRepository.findOne({
+        where: { id }
+      });
+      if (!indicador) throw new NotFoundException("Indicador no encontrado");
+      await this.indicadorRepository.delete(id);
+    } catch (error) {
+      throw new BadRequestException(
+        `Error eliminando indicador: ${error.message}`
+      );
+    }
   }
 
   //* EJercicios de consulta de indicadores
@@ -518,6 +713,83 @@ export class IndicatorsService {
     } catch (error) {
       throw new BadRequestException(
         `Error eliminando sentido: ${error.message}`
+      );
+    }
+  }
+
+  //*-- Unidad de Medición --//
+
+  async createMeasurementUnit(
+    dto: CreateUnitOfMeasurementDto
+  ): Promise<UnidadMedicion> {
+    try {
+      const unidad = this.unidadMedicionRepository.create(dto);
+      return await this.unidadMedicionRepository.save(unidad);
+    } catch (error) {
+      throw new BadRequestException(
+        `Error creando unidad de medición: ${error.message}`
+      );
+    }
+  }
+
+  async findAllMeasurementUnits(): Promise<UnidadMedicion[]> {
+    try {
+      return await this.unidadMedicionRepository.find();
+    } catch (error) {
+      throw new BadRequestException(
+        `Error buscando unidades de medición: ${error.message}`
+      );
+    }
+  }
+
+  async findMeasurementUnitById(id: number): Promise<UnidadMedicion> {
+    try {
+      const unidad = await this.unidadMedicionRepository.findOne({
+        where: { id }
+      });
+      if (!unidad)
+        throw new NotFoundException("Unidad de medición no encontrada");
+      return unidad;
+    } catch (error) {
+      throw new BadRequestException(
+        `Error buscando unidad de medición por ID: ${error.message}`
+      );
+    }
+  }
+
+  //*--- Frecuencia ---//
+
+  async createFrequency(dto: CreateFrecuenciaDto): Promise<Frecuencia> {
+    try {
+      const frecuencia = this.frecuenciaRepository.create(dto);
+      return await this.frecuenciaRepository.save(frecuencia);
+    } catch (error) {
+      throw new BadRequestException(
+        `Error creando frecuencia: ${error.message}`
+      );
+    }
+  }
+
+  async findAllFrequencies(): Promise<Frecuencia[]> {
+    try {
+      return await this.frecuenciaRepository.find();
+    } catch (error) {
+      throw new BadRequestException(
+        `Error buscando frecuencias: ${error.message}`
+      );
+    }
+  }
+
+  async findFrequencyById(id: number): Promise<Frecuencia> {
+    try {
+      const frecuencia = await this.frecuenciaRepository.findOne({
+        where: { id }
+      });
+      if (!frecuencia) throw new NotFoundException("Frecuencia no encontrada");
+      return frecuencia;
+    } catch (error) {
+      throw new BadRequestException(
+        `Error buscando frecuencia por ID: ${error.message}`
       );
     }
   }

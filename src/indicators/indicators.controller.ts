@@ -27,6 +27,68 @@ import { ResultadoIndicador } from "./entities/resultsIndicator.entity";
 export class IndicatorsController {
   constructor(private readonly indicatorsService: IndicatorsService) {}
 
+  //** --- indicadores ---
+  @ApiOperation({ summary: "Crear un nuevo indicador" })
+  @ApiResponse({
+    status: 201,
+    description: "Indicador creado.",
+    type: Indicador
+  })
+  @Post("/create-indicator/")
+  async createIndicador(@Body() createIndicadorDto: any): Promise<Indicador> {
+    return this.indicatorsService.createIndicador(createIndicadorDto);
+  }
+
+  @ApiOperation({ summary: "Obtener todos los indicadores" })
+  @ApiResponse({
+    status: 200,
+    description: "Lista de todos los indicadores.",
+    type: [Indicador]
+  })
+  @Get("/all-indicators/")
+  async findAllIndicadores(): Promise<Indicador[]> {
+    return this.indicatorsService.findAllIndicadores();
+  }
+
+  @ApiOperation({ summary: "Obtener un indicador por ID" })
+  @ApiResponse({
+    status: 200,
+    description: "Indicador encontrado.",
+    type: Indicador
+  })
+  @Get("/indicator/:id")
+  async findOneIndicador(@Param("id") id: string): Promise<Indicador> {
+    return this.indicatorsService.findOneIndicador(Number(id));
+  }
+
+  @Put("/update-indicator/:id")
+  @ApiOperation({ summary: "Actualizar un indicador" })
+  @ApiResponse({
+    status: 200,
+    description: "Indicador actualizado.",
+    type: Indicador
+  })
+  async updateIndicador(
+    @Param("id") id: string,
+    @Body() updateIndicadorDto: any
+  ): Promise<Indicador> {
+    return this.indicatorsService.updateIndicador(
+      Number(id),
+      updateIndicadorDto
+    );
+  }
+
+  @Delete("/remove-indicator/:id")
+  @ApiOperation({ summary: "Eliminar un indicador" })
+  @ApiResponse({
+    status: 200,
+    description: "Indicador eliminado correctamente."
+  })
+  async removeIndicador(@Param("id") id: string): Promise<{ message: string }> {
+    await this.indicatorsService.removeIndicador(Number(id));
+    return { message: "Indicador eliminado correctamente." };
+  }
+
   //* --- consultas indicadores ---
 
   @ApiOperation({ summary: "Obtener todos los indicadores" })
@@ -326,5 +388,57 @@ export class IndicatorsController {
   async removeMeaning(@Param("id") id: string): Promise<{ message: string }> {
     await this.indicatorsService.removeMeaning(Number(id));
     return { message: "Sentido eliminado correctamente." };
+  }
+
+  //-- unidad de medicion ---
+  @ApiOperation({ summary: "Obtener todas las unidades de medición" })
+  @ApiResponse({
+    status: 200,
+    description: "Lista de unidades de medición."
+  })
+  @Get("/all-measurement-units/")
+  async findAllMeasurementUnits(): Promise<any[]> {
+    return this.indicatorsService.findAllMeasurementUnits();
+  }
+
+  @ApiOperation({ summary: "Obtener unidad de medición por ID" })
+  @ApiResponse({
+    status: 200,
+    description: "Unidad de medición encontrada."
+  })
+  @Get("/measurement-units/:id")
+  async findMeasurementUnitById(@Param("id") id: string): Promise<any> {
+    return this.indicatorsService.findMeasurementUnitById(Number(id));
+  }
+
+  //* --- frecuencia ---//
+  @ApiOperation({ summary: "Crear una nueva frecuencia" })
+  @ApiResponse({
+    status: 201,
+    description: "Frecuencia creada correctamente."
+  })
+  @Post("/create-frequency/")
+  async createFrequency(@Body() createFrequencyDto: any): Promise<any> {
+    return this.indicatorsService.createFrequency(createFrequencyDto);
+  }
+
+  @ApiOperation({ summary: "Obtener todas las frecuencias" })
+  @ApiResponse({
+    status: 200,
+    description: "Lista de frecuencias."
+  })
+  @Get("/all-frequencies/")
+  async findAllFrequencies(): Promise<any[]> {
+    return this.indicatorsService.findAllFrequencies();
+  }
+
+  @ApiOperation({ summary: "Obtener frecuencia por ID" })
+  @ApiResponse({
+    status: 200,
+    description: "Frecuencia encontrada."
+  })
+  @Get("/frequencies/:id")
+  async findFrequencyById(@Param("id") id: string): Promise<any> {
+    return this.indicatorsService.findFrequencyById(Number(id));
   }
 }

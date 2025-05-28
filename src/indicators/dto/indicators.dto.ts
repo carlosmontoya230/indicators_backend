@@ -3,11 +3,95 @@ import {
   IsDateString,
   IsInt,
   IsNumber,
+  IsOptional,
   IsPositive,
   IsString,
   Length
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+
+//* Indicadores DTOs ---- */
+export class CreateIndicadorDto {
+  @ApiProperty({ maxLength: 50 })
+  @IsString()
+  @Length(1, 50)
+  codigo: string;
+
+  @ApiProperty({ maxLength: 100 })
+  @IsString()
+  @Length(1, 100)
+  nombre: string;
+
+  @ApiProperty({ maxLength: 4000 })
+  @IsString()
+  @Length(1, 4000)
+  objetivo: string;
+
+  @ApiProperty({ maxLength: 1000 })
+  @IsString()
+  @Length(1, 1000)
+  alcance: string;
+
+  @ApiProperty({ maxLength: 1000 })
+  @IsString()
+  @Length(1, 1000)
+  formula: string;
+
+  @ApiProperty()
+  @IsInt()
+  fkidtipoindicador: number;
+
+  @IsOptional()
+  tipoIndicadorData?: { nombre: string };
+
+  @ApiProperty()
+  @IsInt()
+  fkidunidadmedicion: number;
+
+  @IsOptional()
+  unidadMedicionData?: { descripcion: string };
+
+  @ApiProperty({ maxLength: 1000 })
+  @IsString()
+  @Length(1, 1000)
+  meta: string;
+
+  @ApiProperty()
+  @IsInt()
+  fkidsentido: number;
+
+  @IsOptional()
+  sentidoData?: { nombre: string };
+
+  @ApiProperty()
+  @IsInt()
+  fkidfrecuencia: number;
+
+  @IsOptional()
+  frecuenciaData?: { nombre: string };
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  fkidarticulo?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  fkidliteral?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  fkidnumeral?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  fkidparagrafo?: string;
+}
+
+export class UpdateIndicadorDto extends PartialType(CreateIndicadorDto) {}
 
 //* Tipo de indicador DTOs ----//
 export class CreateTypeIndicatorDto {
@@ -72,3 +156,27 @@ export class CreateSentidoDto {
 }
 
 export class UpdateSentidoDto extends PartialType(CreateSentidoDto) {}
+
+export class CreateUnitOfMeasurementDto {
+  @ApiProperty({
+    description: "Descripción de la unidad de medición",
+    maxLength: 200,
+    example: "Kilogramos"
+  })
+  @IsString()
+  @Length(1, 200)
+  descripcion: string;
+}
+
+//* Frecuencia DTOs ----//
+
+export class CreateFrecuenciaDto {
+  @ApiProperty({
+    description: "Nombre de la frecuencia",
+    maxLength: 200,
+    example: "Mensual"
+  })
+  @IsString()
+  @Length(1, 200)
+  nombre: string;
+}

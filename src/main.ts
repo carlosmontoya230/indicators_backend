@@ -27,7 +27,17 @@ async function bootstrap() {
     .setTitle("API Indicators")
     .setDescription("Documentación de la API de indicadores")
     .setVersion("1.0")
-    .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        name: "JWT",
+        description: "Ingresa tu token JWT aquí",
+        in: "header"
+      },
+      "access-token"
+    )
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
   SwaggerModule.setup("api/v1/indicators/doc", app, document);
