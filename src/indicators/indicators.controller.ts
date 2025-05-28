@@ -15,8 +15,10 @@ import { Indicador } from "./entities/indicator.entity";
 import { IndicatorsService } from "./indicators.service";
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from "@nestjs/swagger";
 import {
+  CreateIndicadorDto,
   CreateResultadoIndicadorDto,
   CreateTypeIndicatorDto,
+  UpdateIndicadorDto,
   UpdateTypeIndicatorDto
 } from "./dto/indicators.dto";
 import { TipoIndicador } from "./entities/typeIndicator.entity";
@@ -35,7 +37,9 @@ export class IndicatorsController {
     type: Indicador
   })
   @Post("/create-indicator/")
-  async createIndicador(@Body() createIndicadorDto: any): Promise<Indicador> {
+  async createIndicador(
+    @Body() createIndicadorDto: CreateIndicadorDto
+  ): Promise<Indicador> {
     return this.indicatorsService.createIndicador(createIndicadorDto);
   }
 
@@ -70,7 +74,7 @@ export class IndicatorsController {
   })
   async updateIndicador(
     @Param("id") id: string,
-    @Body() updateIndicadorDto: any
+    @Body() updateIndicadorDto: UpdateIndicadorDto
   ): Promise<Indicador> {
     return this.indicatorsService.updateIndicador(
       Number(id),
