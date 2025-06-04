@@ -45,11 +45,13 @@ import { Literal } from "./legal/entities/literal.entity";
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      synchronize: false,
       options: {
-        encrypt: false,
-        trustServerCertificate: true
+        encrypt: process.env.DB_ENCRYPT === "true",
+        trustServerCertificate:
+          process.env.DB_TRUST_SERVER_CERTIFICATE === "true",
+        enableArithAbort: true
       },
+      synchronize: false,
       entities: [
         Actor,
         TipoActor,
