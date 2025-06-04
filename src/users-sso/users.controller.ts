@@ -15,11 +15,12 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBody,
-  ApiBearerAuth
+  ApiBearerAuth,
+  ApiParam
 } from "@nestjs/swagger";
 
 import { UsersService } from "./users.service";
-import { CreateUserDto } from "./dto/createUser.dto";
+import { CreateUserDto, UpdateUserDto } from "./dto/createUser.dto";
 import { RolesGuard } from "src/common/guards/rolesguard.service";
 import { Roles } from "src/common/decorators/rolesdecorators.service";
 import { CreateRolDto } from "./dto/rol.dto";
@@ -50,6 +51,7 @@ export class UsersController {
     return "Solo admins pueden ver esto";
   }
 
+  @ApiBearerAuth("access-token")
   @ApiOperation({ summary: "Obtener todos los usuarios" })
   @ApiResponse({ status: 200, description: "Lista de usuarios." })
   @UseGuards(AuthGuard("jwt"), RolesGuard)
@@ -59,6 +61,9 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @ApiBearerAuth("access-token")
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Roles("admin")
   @ApiOperation({ summary: "Buscar usuario por email" })
   @ApiResponse({ status: 200, description: "Usuario encontrado." })
   @Get("/user/:email")
@@ -66,16 +71,22 @@ export class UsersController {
     return this.usersService.findOne(email);
   }
 
-  @ApiOperation({ summary: "Actualizar usuario por email" })
-  @ApiResponse({
-    status: 200,
-    description: "Usuario actualizado correctamente."
-  })
+  @ApiBearerAuth("access-token")
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Roles("admin")
   @Put(":email")
-  update(@Param("email") email: string, @Body() body: { contrasena?: string }) {
-    return this.usersService.updateUser(email, body);
+  @ApiOperation({ summary: "Actualizar usuario" })
+  @ApiParam({ name: "email", type: String })
+  async update(
+    @Param("email") email: string,
+    @Body() updateUserDto: UpdateUserDto
+  ) {
+    return this.usersService.updateUser(email, updateUserDto);
   }
 
+  @ApiBearerAuth("access-token")
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Roles("admin")
   @ApiOperation({ summary: "Eliminar usuario por email" })
   @ApiResponse({ status: 200, description: "Usuario eliminado correctamente." })
   @Delete(":email")

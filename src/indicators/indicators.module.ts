@@ -32,6 +32,7 @@ import { IndicatorsService } from "./indicators.service";
 import { AdminActorsService } from "./services/adminActors.service";
 import { AdminSourceService } from "./services/adminSource.service";
 import { adminRepresentVisualService } from "./services/adminrepresentvisual.service";
+import { Literal } from "src/legal/entities/literal.entity";
 
 @Module({
   imports: [
@@ -58,7 +59,8 @@ import { adminRepresentVisualService } from "./services/adminrepresentvisual.ser
       RolUsuario,
       Usuario,
       Variable,
-      VariablesPorIndicador
+      VariablesPorIndicador,
+      Literal
     ])
   ],
   controllers: [

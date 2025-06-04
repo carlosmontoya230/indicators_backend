@@ -31,6 +31,7 @@ import { Variable } from "src/users-sso/entities/variableUser.entity";
 import { UsersService } from "src/users-sso/users.service";
 import { JwtStrategy } from "src/common/guards/jwt.strategy";
 import { RepresentVisual } from "src/indicators/entities/legalRepresentative.entity.ts/visualRepresent.entity";
+import { Literal } from "src/legal/entities/literal.entity";
 config();
 @Module({
   imports: [
@@ -57,7 +58,8 @@ config();
       RolUsuario,
       Usuario,
       Variable,
-      VariablesPorIndicador
+      VariablesPorIndicador,
+      Literal
     ]),
 
     JwtModule.register({

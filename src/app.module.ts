@@ -33,6 +33,7 @@ import { Usuario } from "./users-sso/entities/user.entity";
 import { VariablesPorIndicador } from "./users-sso/entities/variablePerIndicator.entity";
 import { Variable } from "./users-sso/entities/variableUser.entity";
 import { UsersModule } from "./users-sso/users.module";
+import { Literal } from "./legal/entities/literal.entity";
 
 @Module({
   imports: [
@@ -72,13 +73,13 @@ import { UsersModule } from "./users-sso/users.module";
         RolUsuario,
         Usuario,
         Variable,
-        VariablesPorIndicador
+        VariablesPorIndicador,
+        Literal
       ]
     }),
     UsersModule,
     IndicatorsModule,
     LegalModule,
-    AuthSsoModule,
     AuthSsoModule
   ],
   controllers: [AppController],

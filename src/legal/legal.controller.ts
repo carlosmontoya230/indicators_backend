@@ -52,4 +52,25 @@ export class LegalController {
   async removeArticle(@Param("id") id: string) {
     return this.legalService.removeArticle(id);
   }
+
+  @ApiOperation({ summary: "Obtener todos los literales" })
+  @ApiResponse({ status: 200, description: "Lista de literales." })
+  @Get("/all/literals")
+  async getAllLiteral() {
+    return this.legalService.getAllLiteral();
+  }
+
+  @ApiOperation({ summary: "Obtener todos los numerales" })
+  @ApiResponse({ status: 200, description: "Lista de numerales." })
+  @Get("/all/numerals")
+  async getAllNumeral() {
+    return this.legalService.getAllNumeral();
+  }
+
+  @ApiOperation({ summary: "Obtener todos los paragrafos" })
+  @ApiResponse({ status: 200, description: "Lista de paragrafos." })
+  @Get("/all/paragrafos")
+  async getAllParagrafo() {
+    return this.legalService.getAllParagrafo();
+  }
 }
