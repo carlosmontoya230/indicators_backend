@@ -9,7 +9,7 @@ import {
   ParseIntPipe
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
-import { adminRepresentVisualService } from "../services/adminrepresentvisual.service";
+import { adminRepresentVisualService } from "../services/adminRepresentVisual.service";
 import {
   CreateRepresentVisualDto,
   CreateRepresentVisualPerIndicatorDto,

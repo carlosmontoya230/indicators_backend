@@ -12,7 +12,7 @@ import { Usuario } from "src/users-sso/entities/user.entity";
 import { VariablesPorIndicador } from "src/users-sso/entities/variablePerIndicator.entity";
 import { Variable } from "src/users-sso/entities/variableUser.entity";
 import { AdminActorsController } from "./controllers/adminActors.controller";
-import { AdminRepresentVisualController } from "./controllers/adminrepresentvisual.controller";
+import { AdminRepresentVisualController } from "./controllers/adminRepresentVisual.controller";
 import { AdminSourceController } from "./controllers/adminSource.controller";
 import { Actor } from "./entities/actors/actor.entity";
 import { ResponsablesPorIndicador } from "./entities/actors/reponsiblePerIndicator.entity";
@@ -31,7 +31,7 @@ import { IndicatorsController } from "./indicators.controller";
 import { IndicatorsService } from "./indicators.service";
 import { AdminActorsService } from "./services/adminActors.service";
 import { AdminSourceService } from "./services/adminSource.service";
-import { adminRepresentVisualService } from "./services/adminrepresentvisual.service";
+import { adminRepresentVisualService } from "./services/adminRepresentVisual.service";
 import { Literal } from "src/legal/entities/literal.entity";
 
 @Module({
