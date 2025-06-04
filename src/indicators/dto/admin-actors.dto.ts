@@ -1,5 +1,5 @@
 import { PartialType, ApiProperty } from "@nestjs/swagger";
-import { IsString, Length } from "class-validator";
+import { IsDateString, IsInt, IsString, Length } from "class-validator";
 
 export class CreateActorDto {
   @ApiProperty({
@@ -38,3 +38,17 @@ export class CreateTipoActorDto {
 }
 
 export class UpdateTipoActorDto extends PartialType(CreateTipoActorDto) {}
+
+export class CreateResponsablePorIndicadorDto {
+  @ApiProperty()
+  @IsString()
+  fkidresponsable: string;
+
+  @ApiProperty()
+  @IsInt()
+  fkidindicador: number;
+
+  @ApiProperty()
+  @IsString()
+  fechaasignacion: string;
+}

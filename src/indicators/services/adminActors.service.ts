@@ -1,14 +1,21 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Actor } from "../entities/actors/actor.entity";
 import { TipoActor } from "../entities/actors/typeActor.entity";
 import {
   CreateActorDto,
+  CreateResponsablePorIndicadorDto,
   CreateTipoActorDto,
   UpdateActorDto,
   UpdateTipoActorDto
 } from "../dto/admin-actors.dto";
+import { ResponsablesPorIndicador } from "../entities/actors/reponsiblePerIndicator.entity";
+import { Indicador } from "../entities/indicator.entity";
 
 @Injectable()
 export class AdminActorsService {
@@ -16,7 +23,11 @@ export class AdminActorsService {
     @InjectRepository(Actor)
     private readonly actorRepository: Repository<Actor>,
     @InjectRepository(TipoActor)
-    private readonly tipoActorRepository: Repository<TipoActor>
+    private readonly tipoActorRepository: Repository<TipoActor>,
+    @InjectRepository(ResponsablesPorIndicador)
+    private readonly responsablesPorIndicador: Repository<ResponsablesPorIndicador>,
+    @InjectRepository(Indicador)
+    private readonly indicadorRepo: Repository<Indicador>
   ) {}
 
   //* -- Actor ---
@@ -192,6 +203,87 @@ export class AdminActorsService {
     } catch (error) {
       throw new BadRequestException(
         `Error deleting type actor: ${error.message}`
+      );
+    }
+  }
+
+  //* responsables por indicador
+
+  async getAllReponsibleByIndicator(): Promise<
+    { indicador: Indicador; responsables: ResponsablesPorIndicador[] }[]
+  > {
+    // Trae todos los responsables con sus indicadores y actores relacionados
+    const all = await this.responsablesPorIndicador.find({
+      relations: ["indicador", "responsable"]
+    });
+
+    const grouped = all.reduce((acc, curr) => {
+      const key = curr.fkidindicador;
+      if (!acc[key]) {
+        acc[key] = {
+          indicador: curr.indicador,
+          responsables: []
+        };
+      }
+      acc[key].responsables.push(curr);
+      return acc;
+    }, {} as Record<number, { indicador: Indicador; responsables: ResponsablesPorIndicador[] }>);
+    return Object.values(grouped);
+  }
+
+  async getReponsibleByIndicator(
+    fkidindicador: number
+  ): Promise<ResponsablesPorIndicador[]> {
+    return this.responsablesPorIndicador.find({
+      where: { fkidindicador },
+      relations: ["responsable"]
+    });
+  }
+
+  async createResponsibleByIndicator(
+    dto: CreateResponsablePorIndicadorDto
+  ): Promise<ResponsablesPorIndicador> {
+    const indicador = await this.indicadorRepo.findOne({
+      where: { id: dto.fkidindicador }
+    });
+    if (!indicador) throw new NotFoundException("Indicador no encontrado");
+    const actor = await this.actorRepository.findOne({
+      where: { id: dto.fkidresponsable }
+    });
+    if (!actor)
+      throw new NotFoundException("Responsable (actor) no encontrado");
+    const responsablePorIndicador = this.responsablesPorIndicador.create({
+      ...dto,
+      indicador,
+      responsable: actor
+    });
+
+    try {
+      return await this.responsablesPorIndicador.save(responsablePorIndicador);
+    } catch (error) {
+      throw new BadRequestException(
+        "Error creando responsable por indicador: " + error.message
+      );
+    }
+  }
+
+  async deleteResponsibleByIndicator(
+    fkidresponsable: string,
+    fkidindicador: number
+  ): Promise<void> {
+    try {
+      const responsable = await this.responsablesPorIndicador.findOne({
+        where: { fkidresponsable, fkidindicador }
+      });
+      if (!responsable) {
+        throw new NotFoundException(
+          `Relación responsable-indicador no encontrada`
+        );
+      }
+      await this.responsablesPorIndicador.remove(responsable);
+    } catch (error) {
+      throw new BadRequestException(
+        `Error eliminando responsable por indicador: ${error.message}`
       );
     }
   }

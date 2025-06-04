@@ -27,6 +27,7 @@ import { UsersService } from "./users.service";
 import { Module } from "@nestjs/common";
 import { JwtStrategy } from "src/common/guards/jwt.strategy";
 import { RepresentVisual } from "src/indicators/entities/legalRepresentative.entity.ts/visualRepresent.entity";
+import { Literal } from "src/legal/entities/literal.entity";
 
 @Module({
   imports: [
@@ -53,7 +54,8 @@ import { RepresentVisual } from "src/indicators/entities/legalRepresentative.ent
       RolUsuario,
       Usuario,
       Variable,
-      VariablesPorIndicador
+      VariablesPorIndicador,
+      Literal
     ])
   ],
   controllers: [UsersController],

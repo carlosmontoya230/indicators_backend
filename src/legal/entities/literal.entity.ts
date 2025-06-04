@@ -1,6 +1,6 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
 
-@Entity()
+@Entity("literal")
 export class Literal {
   @PrimaryColumn({ type: "varchar", length: 20 })
   id: string;

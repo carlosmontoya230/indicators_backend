@@ -1,13 +1,25 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { Articulo } from "./entities/article.entity";
 import { CreateArticleDto, UpdateArticleDto } from "./dto/createArticle.dto";
+import { Literal } from "./entities/literal.entity";
+import { Numeral } from "./entities/numeral.entity";
+import { Paragrafo } from "./entities/paragraph.entity";
 
 @Injectable()
 export class LegalService {
-  @InjectRepository(Articulo)
-  private readonly articuloRepository: Repository<Articulo>;
+  constructor(
+    @InjectRepository(Articulo)
+    private readonly articuloRepository: Repository<Articulo>,
+
+    @InjectRepository(Literal)
+    private readonly literalRepository: Repository<Literal>,
+    @InjectRepository(Numeral)
+    private readonly numeralRepository: Repository<Numeral>,
+    @InjectRepository(Paragrafo)
+    private readonly paragrafoRepository: Repository<Paragrafo>
+  ) {}
 
   async createArticle(createArticleDto: CreateArticleDto) {
     try {
@@ -52,6 +64,30 @@ export class LegalService {
       return await this.articuloRepository.delete(id);
     } catch (error) {
       throw new Error(`Error removing article with id ${id}: ${error.message}`);
+    }
+  }
+
+  async getAllLiteral() {
+    try {
+      return await this.literalRepository.find();
+    } catch (error) {
+      throw new Error(`Error getting all literals: ${error.message}`);
+    }
+  }
+
+  async getAllNumeral() {
+    try {
+      return await this.numeralRepository.find();
+    } catch (error) {
+      throw new Error(`Error getting all numerals: ${error.message}`);
+    }
+  }
+
+  async getAllParagrafo() {
+    try {
+      return await this.paragrafoRepository.find();
+    } catch (error) {
+      throw new Error(`Error getting all paragrafos: ${error.message}`);
     }
   }
 }

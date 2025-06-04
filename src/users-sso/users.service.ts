@@ -72,12 +72,36 @@ export class UsersService {
     }
   }
 
-  async updateUser(email: string, data: Partial<Usuario>) {
+  async updateUser(
+    email: string,
+    data: Partial<Usuario> & { roles?: number[] }
+  ) {
     try {
+      const usuario = await this.usuarioRepository.findOne({
+        where: { email }
+      });
+      if (!usuario) {
+        throw new Error("Usuario no encontrado");
+      }
+
       if (data.contrasena) {
         data.contrasena = await bcrypt.hash(data.contrasena, 10);
       }
-      await this.usuarioRepository.update(email, data);
+      const { roles, ...userData } = data;
+      if (Object.keys(userData).length > 0) {
+        await this.usuarioRepository.update(email, userData);
+      }
+
+      if (roles) {
+        await this.rolUsuarioRepository.delete({ fkemail: email });
+        for (const rolId of roles) {
+          const rolUsuario = this.rolUsuarioRepository.create({
+            fkemail: email,
+            fkidrol: rolId
+          });
+          await this.rolUsuarioRepository.save(rolUsuario);
+        }
+      }
       return await this.findOne(email);
     } catch (error) {
       throw new Error(`Error updating user: ${error.message}`);
@@ -86,6 +110,7 @@ export class UsersService {
 
   async removeUser(email: string) {
     try {
+      // await this.rolUsuarioRepository.delete({ fkemail: email });
       return await this.usuarioRepository.delete(email);
     } catch (error) {
       throw new Error(`Error deleting user: ${error.message}`);

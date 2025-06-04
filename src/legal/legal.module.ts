@@ -25,6 +25,7 @@ import { LegalController } from "./legal.controller";
 import { LegalService } from "./legal.service";
 import { Module } from "@nestjs/common";
 import { RepresentVisual } from "src/indicators/entities/legalRepresentative.entity.ts/visualRepresent.entity";
+import { Literal } from "./entities/literal.entity";
 
 @Module({
   imports: [
@@ -51,7 +52,8 @@ import { RepresentVisual } from "src/indicators/entities/legalRepresentative.ent
       RolUsuario,
       Usuario,
       Variable,
-      VariablesPorIndicador
+      VariablesPorIndicador,
+      Literal
     ])
   ],
   controllers: [LegalController],

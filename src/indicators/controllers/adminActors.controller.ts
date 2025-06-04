@@ -12,6 +12,7 @@ import {
 } from "@nestjs/common";
 import { AdminActorsService } from "../services/adminActors.service";
 import {
+  CreateResponsablePorIndicadorDto,
   CreateTipoActorDto,
   UpdateTipoActorDto
 } from "../dto/admin-actors.dto";
@@ -20,6 +21,7 @@ import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { CreateActorDto, UpdateActorDto } from "../dto/admin-actors.dto";
 import { Actor } from "../entities/actors/actor.entity";
 import { ApiBody } from "@nestjs/swagger";
+import { ResponsablesPorIndicador } from "../entities/actors/reponsiblePerIndicator.entity";
 
 @ApiTags("admin actor")
 @Controller("actor")
@@ -142,5 +144,51 @@ export class AdminActorsController {
   async removeTypeActor(@Param("id", ParseIntPipe) id: number) {
     await this.adminActorsService.deleteTypeActor(id);
     return { message: "Tipo de actor eliminado correctamente" };
+  }
+
+  //* responsables por indicador
+
+  @ApiOperation({ summary: "Obtener todos los responsables de un indicador" })
+  @ApiResponse({ status: 200, type: [ResponsablesPorIndicador] })
+  @Get("/responsible-per-indicator/:fkidindicador/")
+  async getAllByIndicador(
+    @Param("fkidindicador", ParseIntPipe) fkidindicador: number
+  ) {
+    return this.adminActorsService.getReponsibleByIndicator(fkidindicador);
+  }
+
+  @ApiOperation({ summary: "Asignar un responsable a un indicador" })
+  @ApiBody({ type: CreateResponsablePorIndicadorDto })
+  @ApiResponse({ status: 201, type: ResponsablesPorIndicador })
+  @Post("/assign-responsible/")
+  async create(@Body() dto: CreateResponsablePorIndicadorDto) {
+    return this.adminActorsService.createResponsibleByIndicator(dto);
+  }
+
+  @ApiOperation({
+    summary: "Obtener todos los responsables agrupados por indicador"
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Lista agrupada por indicador",
+    type: [ResponsablesPorIndicador]
+  })
+  @Get("/getAll/responsible-per-indicator/")
+  async getAllGrouped() {
+    return this.adminActorsService.getAllReponsibleByIndicator();
+  }
+
+  @Delete(":fkidindicador/:fkidresponsable")
+  async delete(
+    @Param("fkidindicador", ParseIntPipe) fkidindicador: number,
+    @Param("fkidresponsable") fkidresponsable: string
+  ) {
+    await this.adminActorsService.deleteResponsibleByIndicator(
+      fkidresponsable,
+      fkidindicador
+    );
+    return {
+      message: "Relación responsable-indicador eliminada correctamente"
+    };
   }
 }

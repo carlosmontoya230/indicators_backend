@@ -120,13 +120,14 @@ export class CreateResultadoIndicadorDto {
   resultado: number;
 
   @ApiProperty({
-    description: "Fecha de cálculo del resultado",
+    description:
+      "Fecha de cálculo del resultado (puede ser string o date-time)",
     example: "2024-06-01T00:00:00.000Z",
     type: String,
     format: "date-time"
   })
-  @IsDateString()
-  fechacalculo: Date;
+  @IsString()
+  fechacalculo: string;
 
   @ApiProperty({
     description: "ID del indicador relacionado",
